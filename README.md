@@ -1,308 +1,632 @@
-# TinyML Activity Recognition with ESP32
+# 🧠 TinyML Activity Recognition with ESP32
 
-A complete **TinyML / Edge AI activity-recognition project** that combines:
+A complete **TinyML / Edge AI activity-recognition project** using sensor data, a CNN model, TensorFlow Lite, ESP32, Arduino, and a Node.js/Express server.
 
-- Machine learning model development and training
-- Sensor-data collection and preprocessing
-- TensorFlow / Keras
-- TensorFlow Lite and INT8 quantization
-- ESP32 embedded inference
-- Arduino deployment
-- A Node.js / Express server for collecting and storing sensor data
-
-The repository is organized into three main parts:
+The project covers the complete workflow:
 
 ```text
-tinyml-esp32-cnn/
-├── tinyml/                 # Machine learning, datasets and trained models
-├── activity_tinyml/        # ESP32 / Arduino deployment
-├── my-express-server/      # Node.js / Express data collection server
-└── Readme.md
+Sensor Data
+    ↓
+ESP32 / MPU6050
+    ↓
+Node.js / Express
+    ↓
+Dataset Creation
+    ↓
+Python + TensorFlow / Keras
+    ↓
+CNN Training
+    ↓
+TensorFlow Lite
+    ↓
+INT8 Quantization
+    ↓
+ESP32 + TensorFlow Lite Micro
+    ↓
+Activity Prediction
 ```
 
-## Project Architecture
+## 🎯 Activities
 
-```text
-                  SENSOR DATA
-                       │
-                       ▼
-              ┌─────────────────┐
-              │   ESP32 + IMU   │
-              └────────┬────────┘
-                       │
-             Data Collection
-                       │
-                       ▼
-              ┌─────────────────┐
-              │ Express Server  │
-              │   Node.js       │
-              └────────┬────────┘
-                       │
-                 Training Data
-                       │
-                       ▼
-              ┌─────────────────┐
-              │   Python /      │
-              │ TensorFlow CNN  │
-              └────────┬────────┘
-                       │
-                Model Training
-                       │
-                       ▼
-              ┌─────────────────┐
-              │ TensorFlow Lite │
-              │    INT8 Model   │
-              └────────┬────────┘
-                       │
-                Model Conversion
-                       │
-                       ▼
-              ┌─────────────────┐
-              │      ESP32      │
-              │ TFLite Micro    │
-              └────────┬────────┘
-                       │
-                       ▼
-                Activity Result
-```
+The current project contains data and demonstrations for:
+
+- 🚶 Walking
+- 🏃 Running
+- 🪑 Sitting
 
 ---
 
 # 📁 Repository Structure
 
-## 1. `tinyml/` — Machine Learning
-
-This directory contains the machine-learning workflow, datasets, trained models and preprocessing files.
-
 ```text
-tinyml/
-├── tinyml.ipynb
-├── walking.jsonl
-├── running.jsonl
-├── setting.jsonl
+tinyml-esp32-cnn/
 │
-└── data/
-    ├── walking.csv
-    ├── running.csv
-    ├── setting.csv
-    ├── y.csv
-    │
-    ├── scaler.pkl
-    ├── scaler_params.h
-    │
-    ├── activity_model.keras
-    ├── activity_model.tflite
-    ├── activity_model_int8.tflite
-    │
-    ├── model_data.cc
-    └── model_data.h
+├── activity_tinyml/
+│   ├── activity_tinyml.ino
+│   ├── model_data.cpp
+│   ├── model_data.h
+│   └── scaler_params.h
+│
+├── tinyml/
+│   ├── tinyml.ipynb
+│   ├── running.jsonl
+│   ├── setting.jsonl
+│   ├── walking.jsonl
+│   │
+│   └── data/
+│       ├── activity_model.keras
+│       ├── activity_model.tflite
+│       ├── activity_model_int8.tflite
+│       ├── model_data.cc
+│       ├── model_data.h
+│       ├── running.csv
+│       ├── setting.csv
+│       ├── walking.csv
+│       ├── scaler.pkl
+│       ├── scaler_params.h
+│       └── y.csv
+│
+├── my-express-server/
+│   ├── server.js
+│   ├── package.json
+│   ├── package-lock.json
+│   ├── mpu_data.csv
+│   ├── ruuning.jsonl
+│   ├── sitting.jsonl
+│   └── walking.jsonl
+│
+├── vedios/
+│   ├── running.mp4
+│   ├── sitting.mp4
+│   └── walking.mp4
+│
+└── README.md
 ```
 
-### Main notebook
+---
+
+# 🧩 Project Components
+
+## 1. 🧠 Machine Learning — `tinyml/`
+
+The `tinyml/` directory contains the machine-learning workflow.
+
+Main notebook:
 
 ```text
 tinyml/tinyml.ipynb
 ```
 
-The notebook is the main workspace for the machine-learning process.
+It is used for:
 
-### Activity datasets
-
-The repository currently contains data for:
-
-- Walking
-- Running
-- Setting
-
-CSV datasets are available in:
-
-```text
-tinyml/data/
-```
-
-JSONL data files are available directly under:
-
-```text
-tinyml/
-```
+1. Loading sensor data
+2. Preparing the dataset
+3. Preprocessing
+4. Feature scaling
+5. Preparing training data
+6. Building the CNN
+7. Training the model
+8. Evaluating the model
+9. Converting the model to TensorFlow Lite
+10. INT8 quantization
+11. Preparing the model for ESP32 deployment
 
 ---
 
-# 🧠 Machine Learning Pipeline
+## 2. 🤖 ESP32 / Arduino — `activity_tinyml/`
 
-The general ML workflow is:
-
-```text
-Raw Sensor Data
-      ↓
-Data Preparation
-      ↓
-Preprocessing
-      ↓
-Feature Scaling
-      ↓
-Training Dataset
-      ↓
-CNN Model
-      ↓
-Model Training
-      ↓
-Model Evaluation
-      ↓
-TensorFlow Lite
-      ↓
-INT8 Quantization
-      ↓
-ESP32 Deployment
-```
-
-The project uses a CNN model for activity classification from sequential sensor data.
-
----
-
-# 📦 Trained Models
-
-The trained models are stored under:
-
-```text
-tinyml/data/
-```
-
-### Keras model
-
-```text
-activity_model.keras
-```
-
-The Keras model is the main TensorFlow/Keras model used during ML development.
-
-### TensorFlow Lite model
-
-```text
-activity_model.tflite
-```
-
-This is the TensorFlow Lite version of the trained model.
-
-### INT8 TensorFlow Lite model
-
-```text
-activity_model_int8.tflite
-```
-
-The INT8 model is intended for efficient embedded inference and TinyML deployment.
-
-Quantization can reduce the computational and memory requirements of a neural network, making the model more suitable for microcontrollers.
-
----
-
-# 📊 Data Scaling
-
-The project contains:
-
-```text
-scaler.pkl
-```
-
-for the Python-side scaler.
-
-The corresponding parameters are also exported as:
-
-```text
-scaler_params.h
-```
-
-The C/C++ header allows the ESP32 application to reproduce the preprocessing used during model training.
-
-This is important because the model should receive data processed in the same way during training and inference.
-
----
-
-# 2. `activity_tinyml/` — ESP32 / Arduino
-
-This directory contains the embedded implementation.
+The ESP32 deployment project is located in:
 
 ```text
 activity_tinyml/
-├── activity_tinyml.ino
-├── model_data.cpp
-├── model_data.h
-└── scaler_params.h
 ```
 
-### Arduino sketch
+Main files:
 
 ```text
 activity_tinyml.ino
-```
-
-This is the main Arduino/ESP32 application.
-
-### Embedded model
-
-```text
 model_data.cpp
 model_data.h
-```
-
-These files contain the converted model data required by the embedded application.
-
-### Embedded preprocessing
-
-```text
 scaler_params.h
 ```
 
-Contains the preprocessing/scaling parameters required by the ESP32 inference pipeline.
+The Arduino sketch runs the TinyML inference application on the ESP32.
 
 ---
 
-# 3. `my-express-server/` — Data Collection Server
+## 3. 🌐 Node.js / Express Server — `my-express-server/`
 
-The `my-express-server/` directory contains a Node.js / Express server used as part of the sensor-data workflow.
+The project includes a Node.js/Express server for sensor-data collection.
 
 ```text
 my-express-server/
 ├── server.js
 ├── package.json
 ├── package-lock.json
-│
 ├── mpu_data.csv
 ├── ruuning.jsonl
 ├── sitting.jsonl
 └── walking.jsonl
 ```
 
-The server-side directory contains collected sensor/activity data and the Node.js application.
+Install dependencies:
 
-> `node_modules/` is also present locally, but it should normally **not be committed to Git** because dependencies can be recreated using `npm install`.
+```bash
+cd my-express-server
+npm install
+```
+
+Run the server:
+
+```bash
+node server.js
+```
 
 ---
 
-# 🚀 Getting Started
+# 🔬 Machine Learning Pipeline
 
-## Prerequisites
+```text
+             SENSOR DATA
+                  │
+                  ▼
+          ┌───────────────┐
+          │     ESP32     │
+          │    MPU6050    │
+          └───────┬───────┘
+                  │
+                  ▼
+          ┌───────────────┐
+          │ Node.js /     │
+          │ Express       │
+          └───────┬───────┘
+                  │
+                  ▼
+             DATASET
+                  │
+                  ▼
+          ┌───────────────┐
+          │ TensorFlow /  │
+          │ Keras         │
+          └───────┬───────┘
+                  │
+                  ▼
+                CNN
+                  │
+                  ▼
+        TensorFlow Lite
+                  │
+                  ▼
+          INT8 Quantization
+                  │
+                  ▼
+          C/C++ Model Data
+                  │
+                  ▼
+          ┌───────────────┐
+          │     ESP32     │
+          │ TFLite Micro  │
+          └───────┬───────┘
+                  │
+                  ▼
+          ACTIVITY RESULT
+```
 
-### Machine Learning
+---
 
-Install:
+# 📊 Dataset
 
-- Python 3
-- Jupyter Notebook
-- TensorFlow
-- NumPy
-- Pandas
-- Scikit-learn
-- Joblib
-- Matplotlib
+The machine-learning data contains activity classes including:
 
-Example:
+| Activity | Dataset |
+|---|---|
+| 🚶 Walking | `walking.csv` |
+| 🏃 Running | `running.csv` |
+| 🪑 Sitting | `setting.csv` |
+
+The CSV datasets are located inside:
+
+```text
+tinyml/data/
+```
+
+JSONL activity data is available under:
+
+```text
+tinyml/
+```
+
+and additional collected data is available under:
+
+```text
+my-express-server/
+```
+
+---
+
+# 🧠 CNN Model
+
+The project uses a **Convolutional Neural Network (CNN)** for activity classification from sequential sensor data.
+
+General flow:
+
+```text
+Sensor Data
+     ↓
+Input Window
+     ↓
+1D Convolution
+     ↓
+Feature Extraction
+     ↓
+Pooling
+     ↓
+Classification
+     ↓
+Activity
+```
+
+The CNN learns patterns in the motion/sensor signals associated with the different activity classes.
+
+---
+
+# 📦 Trained Models
+
+The trained models are located in:
+
+```text
+tinyml/data/
+```
+
+### Keras
+
+```text
+activity_model.keras
+```
+
+The TensorFlow/Keras model used during ML development.
+
+### TensorFlow Lite
+
+```text
+activity_model.tflite
+```
+
+The TensorFlow Lite version of the trained model.
+
+### INT8 TensorFlow Lite
+
+```text
+activity_model_int8.tflite
+```
+
+The quantized model intended for efficient TinyML deployment.
+
+---
+
+# ⚙️ Scaling and Preprocessing
+
+Python scaler:
+
+```text
+scaler.pkl
+```
+
+ESP32 scaler parameters:
+
+```text
+scaler_params.h
+```
+
+The same preprocessing parameters should be used during training and inference.
+
+```text
+Raw Sensor Data
+       ↓
+     Scaler
+       ↓
+Normalized Data
+       ↓
+      CNN
+```
+
+---
+
+# 🤖 ESP32 Inference
+
+The ESP32 inference process is:
+
+```text
+       MPU6050
+          │
+          ▼
+        ESP32
+          │
+          ▼
+   Sensor Samples
+          │
+          ▼
+    Preprocessing
+          │
+          ▼
+     Normalization
+          │
+          ▼
+ TensorFlow Lite Micro
+          │
+          ▼
+          CNN
+          │
+          ▼
+ Activity Prediction
+```
+
+The model is intended to run locally on the ESP32.
+
+---
+
+# 🎥 Activity Demonstration Videos
+
+The repository includes demonstration videos for the three activity classes.
+
+All videos are stored in:
+
+```text
+vedios/
+```
+
+## 🏃 Running
+
+<div align="center">
+
+### Running Activity
+
+<video src="vedios/running.mp4" controls width="700"></video>
+
+**[▶️ Open Running Video](vedios/running.mp4)**
+
+</div>
+
+---
+
+## 🪑 Sitting
+
+<div align="center">
+
+### Sitting Activity
+
+<video src="vedios/sitting.mp4" controls width="700"></video>
+
+**[▶️ Open Sitting Video](vedios/sitting.mp4)**
+
+</div>
+
+---
+
+## 🚶 Walking
+
+<div align="center">
+
+### Walking Activity
+
+<video src="vedios/walking.mp4" controls width="700"></video>
+
+**[▶️ Open Walking Video](vedios/walking.mp4)**
+
+</div>
+
+> **Note:** GitHub README rendering does not consistently support HTML `<video>` playback for repository-relative MP4 files. The **Open Video** links above provide a reliable way to access the videos from the repository.
+
+---
+
+# 🎬 Activity Demonstration
+
+The videos correspond to the activity classes used in the project:
+
+```text
+                  ACTIVITY
+                     │
+        ┌────────────┼────────────┐
+        │            │            │
+        ▼            ▼            ▼
+     WALKING       RUNNING      SITTING
+        │            │            │
+        ▼            ▼            ▼
+ walking.csv    running.csv    setting.csv
+        │            │            │
+        ▼            ▼            ▼
+ walking.mp4    running.mp4    sitting.mp4
+```
+
+This gives a visual reference for the physical activities represented in the sensor dataset.
+
+---
+
+# 🚀 Complete Workflow
+
+## Step 1 — Perform an Activity
+
+Perform one of the supported activities:
+
+```text
+Walking
+Running
+Sitting
+```
+
+## Step 2 — Collect Sensor Data
+
+The ESP32 collects motion data.
+
+```text
+Activity
+   ↓
+Motion
+   ↓
+MPU6050
+   ↓
+ESP32
+```
+
+## Step 3 — Send Data to Server
+
+During data collection:
+
+```text
+ESP32
+  ↓
+Node.js / Express
+  ↓
+CSV / JSONL
+```
+
+## Step 4 — Prepare Dataset
+
+The data is organized into activity classes.
+
+## Step 5 — Train the CNN
+
+```text
+Dataset
+   ↓
+Preprocessing
+   ↓
+Scaling
+   ↓
+CNN
+   ↓
+Training
+   ↓
+Evaluation
+```
+
+## Step 6 — Convert the Model
+
+```text
+Keras Model
+     ↓
+TensorFlow Lite
+     ↓
+INT8 TensorFlow Lite
+```
+
+## Step 7 — Prepare ESP32 Model
+
+```text
+activity_model_int8.tflite
+             ↓
+      model_data.cpp
+      model_data.h
+```
+
+## Step 8 — Deploy to ESP32
+
+```text
+ESP32
+ ├── Arduino Sketch
+ ├── CNN Model
+ └── Scaler Parameters
+```
+
+## Step 9 — Run Local Inference
+
+```text
+Sensor
+  ↓
+ESP32
+  ↓
+Preprocessing
+  ↓
+CNN
+  ↓
+Prediction
+```
+
+---
+
+# ⚡ TinyML / Edge AI
+
+Traditional cloud-based ML:
+
+```text
+Sensor
+   ↓
+Internet
+   ↓
+Cloud Server
+   ↓
+ML Model
+   ↓
+Prediction
+```
+
+TinyML:
+
+```text
+Sensor
+   ↓
+ESP32
+   ↓
+TinyML Model
+   ↓
+Prediction
+```
+
+The main idea is to bring machine-learning inference closer to the sensor and embedded device.
+
+---
+
+# 🛠️ Technologies Used
+
+| Technology | Purpose |
+|---|---|
+| Python | ML development |
+| TensorFlow | Deep learning |
+| Keras | CNN development |
+| TensorFlow Lite | Model conversion |
+| TensorFlow Lite Micro | Embedded inference |
+| NumPy | Numerical processing |
+| Pandas | Dataset processing |
+| Scikit-learn | Preprocessing |
+| Joblib | Scaler storage |
+| Jupyter Notebook | ML experimentation |
+| ESP32 | Embedded AI hardware |
+| Arduino | ESP32 development |
+| MPU6050 | Motion sensing |
+| Node.js | Server runtime |
+| Express.js | Data collection |
+| CSV | Dataset storage |
+| JSONL | Sensor/activity data |
+| Git/GitHub | Version control |
+
+---
+
+# 🚀 Installation
+
+## Python Environment
+
+Create a virtual environment:
 
 ```bash
 python3 -m venv venv
-source venv/bin/activate
+```
 
-pip install tensorflow numpy pandas scikit-learn joblib matplotlib jupyter
+Activate it:
+
+```bash
+source venv/bin/activate
+```
+
+Install dependencies:
+
+```bash
+pip install tensorflow
+pip install numpy
+pip install pandas
+pip install scikit-learn
+pip install joblib
+pip install matplotlib
+pip install jupyter
 ```
 
 Start Jupyter:
@@ -311,35 +635,11 @@ Start Jupyter:
 jupyter notebook
 ```
 
-Then open:
+Open:
 
 ```text
 tinyml/tinyml.ipynb
 ```
-
----
-
-# 🖥️ Run the Express Server
-
-Go to the server directory:
-
-```bash
-cd my-express-server
-```
-
-Install dependencies:
-
-```bash
-npm install
-```
-
-Start the server using the command defined by the project configuration, or run the server entry point directly if appropriate:
-
-```bash
-node server.js
-```
-
-The server can be used as part of the sensor-data collection workflow.
 
 ---
 
@@ -351,211 +651,118 @@ Open:
 activity_tinyml/activity_tinyml.ino
 ```
 
-Use the Arduino IDE with ESP32 board support installed.
+Configure Arduino IDE with:
 
-Depending on the implementation, install/configure the required:
+- ESP32 board support
+- Required sensor libraries
+- TensorFlow Lite Micro / compatible library
 
-- ESP32 board package
-- TensorFlow Lite Micro libraries
-- Sensor libraries
+Select the correct ESP32 board and serial port.
 
-Select the correct ESP32 board and serial port, compile the project, and upload it to the device.
-
----
-
-# 🤖 TinyML Inference
-
-The embedded inference process follows this general flow:
+Then:
 
 ```text
-Sensor
-  ↓
-ESP32
-  ↓
-Collect Sensor Samples
-  ↓
-Preprocess / Scale
-  ↓
-Prepare Tensor
-  ↓
-TensorFlow Lite Micro
-  ↓
-CNN Inference
-  ↓
-Activity Classification
+Verify → Upload
 ```
 
-The purpose of TinyML is to move inference from a larger computer or cloud server directly onto a resource-constrained embedded device.
-
 ---
 
-# 🌐 Server-Based Data Collection vs Edge Inference
+# 📡 Node.js Server Setup
 
-This repository demonstrates both sides of an ML system.
-
-### Data collection
-
-```text
-ESP32
-  ↓
-Node.js / Express
-  ↓
-Collected Dataset
-  ↓
-Training
+```bash
+cd my-express-server
+npm install
+node server.js
 ```
 
-### Edge inference
-
-```text
-Sensor
-  ↓
-ESP32
-  ↓
-TFLite Micro
-  ↓
-CNN
-  ↓
-Prediction
-```
-
-This separation makes it possible to use a server/computer during development while deploying the final trained model directly to the ESP32.
-
 ---
 
-# 🧪 Activity Classes
+# 📚 Learning Objectives
 
-The current repository contains activity data for:
+This project provides practical experience with:
 
-| Activity | Data |
-|---|---|
-| Walking | `walking.csv`, `walking.jsonl` |
-| Running | `running.csv`, `ruuning.jsonl` |
-| Setting | `setting.csv`, `setting.jsonl` |
+### Machine Learning
 
-> The filename `ruuning.jsonl` is kept as it currently exists in the repository.
-
----
-
-# 🛠️ Technologies
-
-| Technology | Purpose |
-|---|---|
-| Python | ML development |
-| TensorFlow | Deep learning |
-| Keras | CNN model development |
-| TensorFlow Lite | Model conversion |
-| TensorFlow Lite Micro | Embedded inference |
-| NumPy | Numerical processing |
-| Pandas | Dataset processing |
-| Scikit-learn | Data preprocessing |
-| Joblib | Saving/loading scaler |
-| Jupyter Notebook | ML experimentation |
-| ESP32 | Edge AI hardware |
-| Arduino | Embedded development |
-| Node.js | Server runtime |
-| Express.js | Data collection server |
-
----
-
-# 🎯 Project Objectives
-
-This project is intended to demonstrate the complete TinyML development lifecycle:
-
-1. Collect sensor data
-2. Store and organize the data
-3. Prepare the dataset
-4. Preprocess sensor measurements
-5. Train a CNN
-6. Evaluate the trained model
-7. Convert the model to TensorFlow Lite
-8. Quantize the model
-9. Convert the model into embedded C/C++ data
-10. Deploy the model to ESP32
-11. Perform inference on the edge
-
----
-
-# 📚 Learning Topics
-
-This project can be used to learn:
-
-- Machine Learning
-- Deep Learning
-- Convolutional Neural Networks
-- Time-series sensor data
+- Dataset creation
 - Data preprocessing
 - Feature scaling
+- CNN architecture
 - Model training
-- Model conversion
-- INT8 quantization
+- Model evaluation
+
+### TinyML
+
 - TensorFlow Lite
+- INT8 quantization
 - TensorFlow Lite Micro
-- TinyML
-- Edge AI
+- Model conversion
+- Embedded inference
+
+### Embedded Systems
+
 - ESP32
 - Arduino
+- MPU6050
+- Sensor data acquisition
+- Real-time inference
+
+### Backend
+
 - Node.js
 - Express.js
-- IoT data collection
+- Data collection
+- CSV
+- JSONL
 
 ---
 
 # 🔮 Future Improvements
 
-Possible improvements include:
-
 - [ ] Add more activity classes
-- [ ] Increase the size of the dataset
-- [ ] Improve model accuracy
-- [ ] Add training/validation graphs
+- [ ] Increase dataset size
+- [ ] Improve classification accuracy
 - [ ] Add confusion matrix
+- [ ] Add accuracy/loss graphs
+- [ ] Add validation/test visualization
 - [ ] Benchmark ESP32 inference latency
 - [ ] Measure RAM usage
 - [ ] Measure Flash usage
-- [ ] Optimize the INT8 model
+- [ ] Optimize INT8 model
 - [ ] Add OLED display
-- [ ] Add real-time prediction output
+- [ ] Add real-time prediction display
 - [ ] Add MQTT support
-- [ ] Add Wi-Fi data synchronization
+- [ ] Add Wi-Fi synchronization
 - [ ] Compare CNN with LSTM
-- [ ] Compare CNN with traditional machine-learning algorithms
+- [ ] Compare CNN with traditional ML
 - [ ] Optimize power consumption
 
 ---
 
-# ⚠️ Git Recommendation
+# ⚠️ Recommended `.gitignore`
 
-Do **not** normally commit the following generated/local directories:
-
-```text
-node_modules/
-.ipynb_checkpoints/
-```
-
-A suitable `.gitignore` can include:
+Do not normally commit generated dependencies or temporary files.
 
 ```gitignore
 node_modules/
-__pycache__/
-.ipynb_checkpoints/
-*.pyc
-.env
 venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.env
 ```
 
 ---
 
 # 👨‍💻 Author
 
-**Rachappa Biradar**
+## Rachappa Biradar
 
 Computer Science Student
 
-Interests:
+### Interests
 
-- TinyML
 - Machine Learning
+- TinyML
 - Edge AI
 - Embedded Systems
 - IoT
@@ -564,12 +771,63 @@ Interests:
 
 ---
 
-# ⭐ Project
+# ⭐ Support
 
-If you find this project useful for learning TinyML, ESP32, or Edge AI, consider giving the repository a star.
+If you find this project useful for learning **TinyML, CNN, ESP32, TensorFlow Lite, or Edge AI**, consider giving the repository a ⭐ on GitHub.
 
 ---
 
-## 📜 License
+# 📜 License
 
-Add the project's preferred open-source license before publishing if you intend others to reuse the code.
+Add an appropriate open-source license before distributing the project if you want others to reuse and modify the code.
+
+---
+
+# 📌 Project Summary
+
+```text
+┌─────────────────────────────────────────────┐
+│       TINYML ACTIVITY RECOGNITION           │
+├─────────────────────────────────────────────┤
+│                                             │
+│  MPU6050                                    │
+│      │                                      │
+│      ▼                                      │
+│  ESP32                                       │
+│      │                                      │
+│      ▼                                      │
+│  Data Collection                            │
+│      │                                      │
+│      ▼                                      │
+│  Node.js / Express                          │
+│      │                                      │
+│      ▼                                      │
+│  Dataset                                    │
+│      │                                      │
+│      ▼                                      │
+│  TensorFlow / Keras                         │
+│      │                                      │
+│      ▼                                      │
+│  CNN Model                                  │
+│      │                                      │
+│      ▼                                      │
+│  TensorFlow Lite                            │
+│      │                                      │
+│      ▼                                      │
+│  INT8 Quantization                          │
+│      │                                      │
+│      ▼                                      │
+│  TensorFlow Lite Micro                      │
+│      │                                      │
+│      ▼                                      │
+│  ESP32                                      │
+│      │                                      │
+│      ▼                                      │
+│  ┌─────────┬─────────┬─────────┐            │
+│  │ Walking │ Running │ Sitting │            │
+│  └─────────┴─────────┴─────────┘            │
+│                                             │
+└─────────────────────────────────────────────┘
+```
+
+**TinyML brings machine learning from larger computers and cloud systems to resource-constrained edge devices.**
